@@ -1,4 +1,4 @@
-# IIIT Kottayam Football League
+# IIIT Kottayam Super League
 
 This is the central repository for the college men's and women's football league website. 
 

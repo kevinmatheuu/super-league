@@ -13,11 +13,13 @@ app.use(express.json());
 const standingsRoute = require('./routes/standings');
 const scheduleRoute = require('./routes/schedule'); 
 const newsRoute = require('./routes/news');
+const matchesRoute = require('./routes/matches');
 
 // Use Routes
 app.use('/api/standings', standingsRoute);
 app.use('/api/schedule', scheduleRoute); 
 app.use('/api/news', newsRoute);
+app.use('/api/matches', matchesRoute);
 
 // Basic Health Check Route
 app.get('/', (req, res) => {

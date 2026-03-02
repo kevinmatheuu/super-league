@@ -12,10 +12,12 @@ app.use(express.json());
 // Import Routes
 const standingsRoute = require('./routes/standings');
 const scheduleRoute = require('./routes/schedule'); 
+const newsRoute = require('./routes/news');
 
 // Use Routes
 app.use('/api/standings', standingsRoute);
 app.use('/api/schedule', scheduleRoute); 
+app.use('/api/news', newsRoute);
 
 // Basic Health Check Route
 app.get('/', (req, res) => {

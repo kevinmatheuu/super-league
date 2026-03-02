@@ -14,12 +14,14 @@ const standingsRoute = require('./routes/standings');
 const scheduleRoute = require('./routes/schedule'); 
 const newsRoute = require('./routes/news');
 const matchesRoute = require('./routes/matches');
+const leaderboardRoute = require('./routes/leaderboard');
 
 // Use Routes
 app.use('/api/standings', standingsRoute);
 app.use('/api/schedule', scheduleRoute); 
 app.use('/api/news', newsRoute);
 app.use('/api/matches', matchesRoute);
+app.use('/api/leaderboard', leaderboardRoute);
 
 // Basic Health Check Route
 app.get('/', (req, res) => {

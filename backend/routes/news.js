@@ -1,42 +1,34 @@
 const express = require('express');
 const router = express.Router();
+const supabase = require('../supabaseClient');
 
 // GET /api/news
-router.get('/', (req, res) => {
-  const mockNews = {
-    success: true,
-    message: "League news retrieved successfully",
-    data: {
-      articles: [
-        {
-          id: "news-1",
-          title: "Neon Strikers Secure Top Spot After Thrilling Victory",
-          summary: "The Neon Strikers continue their undefeated streak with a stunning 3-1 win over Cyber United.",
-          date: "2026-03-01T10:00:00Z",
-          author: "Jane Doe",
-          imageUrl: "https://yourdomain.com/assets/news-neon-win.jpg"
-        },
-        {
-          id: "news-2",
-          title: "Matrix FC Announces New Head Coach",
-          summary: "In a shocking mid-season move, Matrix FC has replaced their head coach following a string of tough losses.",
-          date: "2026-02-28T14:30:00Z",
-          author: "John Smith",
-          imageUrl: "https://yourdomain.com/assets/news-matrix-coach.jpg"
-        },
-        {
-          id: "news-3",
-          title: "Quantum Dynamo Signs Star Striker",
-          summary: "Quantum Dynamo boosts their offensive lineup by acquiring the league's top prospect ahead of the transfer deadline.",
-          date: "2026-02-25T09:15:00Z",
-          author: "Sarah Jenkins",
-          imageUrl: "https://yourdomain.com/assets/news-quantum-transfer.jpg"
-        }
-      ]
-    }
-  };
-  
-  res.json(mockNews);
+router.get('/', async (req, res) => {
+  try {
+    // 1. Fetch live articles from Supabase, ordered by newest first
+    // Note: use "imageUrl:image_url" to automatically rename the snake_case DB column to the camelCase JSON contract!
+    const { data, error } = await supabase
+      .from('newsletter')
+      .select('id, title, summary, date, author, imageUrl:image_url')
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+
+    // 2. Format to match api contract
+    const response = {
+      success: true,
+      message: "League news retrieved successfully",
+      data: {
+        articles: data 
+      }
+    };
+    
+    res.json(response);
+
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ success: false, message: "Failed to fetch news" });
+  }
 });
 
 module.exports = router;

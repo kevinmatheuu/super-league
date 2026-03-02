@@ -11,14 +11,15 @@ app.use(express.json());
 
 // Import Routes
 const standingsRoute = require('./routes/standings');
+const scheduleRoute = require('./routes/schedule'); 
 
 // Use Routes
-// This tells Express: "Any request starting with /api/standings should be handled by the standingsRoute file"
 app.use('/api/standings', standingsRoute);
+app.use('/api/schedule', scheduleRoute); 
 
 // Basic Health Check Route
 app.get('/', (req, res) => {
-  res.json({ message: "Super League Backend API is running! " });
+  res.json({ message: "Super League Backend API is running! ⚽" });
 });
 
 // Start Server

@@ -1,34 +1,33 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
+// Initialize Supabase
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// This function handles the GET request for /api/standings
 export async function GET() {
   try {
+    // Fetch live matches from Supabase, ordered by date
     const { data, error } = await supabase
-      .from('league_standings')
+      .from('matches')
       .select('*')
-      .order('rank', { ascending: true });
+      .order('date', { ascending: true }); // Orders from oldest/upcoming to furthest in the future
 
     if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      message: "League standings retrieved successfully",
+      message: "League schedule retrieved successfully",
       data: {
-        seasonId: "season-2026",
-        seasonName: "College Football League 2026",
-        standings: data
+        matches: data 
       }
     });
 
   } catch (error) {
     console.error("Database error:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to fetch standings" },
+      { success: false, message: "Failed to fetch schedule" },
       { status: 500 }
     );
   }

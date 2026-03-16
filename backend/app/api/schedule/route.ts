@@ -1,34 +1,57 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-// Initialize Supabase
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
 
-export async function GET() {
-    try {
-        // Fetch live matches from Supabase, ordered by date
-        const { data, error } = await supabase
-            .from('matches')
-            .select('*')
-            .order('date', { ascending: true }); // Orders from oldest/upcoming to furthest in the future
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-        if (error) throw error;
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll() },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          },
+        },
+      }
+    );
 
-        return NextResponse.json({
-            success: true,
-            message: "League schedule retrieved successfully",
-            data: {
-                matches: data
-            }
-        });
+    // Using your 'league_schedule' view from the database schema
+    const { data, count, error } = await supabase
+      .from('league_schedule')
+      .select('*', { count: 'exact' })
+      .order('date', { ascending: true }) // Oldest/upcoming matches first
+      .range(from, to);
 
-    } catch (error) {
-        console.error("Database error:", error);
-        return NextResponse.json(
-            { success: false, message: "Failed to fetch schedule" },
-            { status: 500 }
-        );
-    }
+    if (error) throw error;
+
+    const totalPages = count ? Math.ceil(count / limit) : 0;
+
+    return NextResponse.json({
+      success: true,
+      data: data,
+      meta: {
+        total_items: count,
+        total_pages: totalPages,
+        current_page: page,
+        items_per_page: limit
+      }
+    });
+
+  } catch (error) {
+    console.error("Schedule fetch error:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch schedule" },
+      { status: 500 }
+    );
+  }
 }

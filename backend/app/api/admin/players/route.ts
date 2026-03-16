@@ -22,9 +22,10 @@ export async function POST(request: Request) {
       .insert([{
         first_name: body.first_name,
         last_name: body.last_name,
-        team_id: body.team_id || null, // Nullable if they don't have a team yet
+        team_id: body.team_id || null, 
         position: body.position,
-        jersey_number: body.jersey_number || null
+        jersey_number: body.jersey_number || null,
+        image_url: body.image_url || null 
       }])
       .select()
       .single();
@@ -52,7 +53,8 @@ export async function PUT(request: Request) {
         last_name: body.last_name,
         team_id: body.team_id,
         position: body.position,
-        jersey_number: body.jersey_number
+        jersey_number: body.jersey_number,
+        image_url: body.image_url 
       })
       .eq('id', body.id)
       .select()

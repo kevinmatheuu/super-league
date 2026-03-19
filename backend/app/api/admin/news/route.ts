@@ -2,6 +2,26 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { handleError } from '../../../../lib/errorHandler';
+import { z } from 'zod';
+
+// 1. DEFINE THE JSON BLOCK SCHEMA
+const contentBlockSchema = z.array(
+  z.object({
+    type: z.enum(['paragraph', 'image', 'quote']),
+    value: z.string().optional(), // Used for paragraphs and quotes
+    url: z.string().url().optional(), // Used for images
+    alt: z.string().optional(), // Used for images
+    author: z.string().optional() // Used for quotes
+  })
+);
+
+// 2. DEFINE THE FULL ARTICLE SCHEMA
+const articleSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  summary: z.string().optional(),
+  imageUrl: z.string().url().optional(),
+  content: contentBlockSchema.optional().default([]) // Our new JSON array!
+});
 
 // Helper function to init Supabase
 async function getSupabaseClient() {
@@ -15,6 +35,14 @@ async function getSupabaseClient() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    
+    // Validate the incoming JSON blocks!
+    const validatedData = articleSchema.parse({
+      ...body,
+      // If the frontend doesn't send content, default to an empty array
+      content: body.content || [] 
+    });
+
     const supabase = await getSupabaseClient();
 
     // Securely get the logged-in admin's details
@@ -24,12 +52,12 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from('newsletter')
       .insert([{
-        title: body.title,
-        summary: body.summary,
-        // Tie the author to the admin's email (or ID if email isn't available)
+        title: validatedData.title,
+        summary: validatedData.summary,
         author: user.email || user.id, 
-        image_url: body.imageUrl || null,
-        date: new Date().toISOString() // Automatically set the publish date to right now
+        image_url: validatedData.imageUrl || null,
+        content: validatedData.content, // Save the verified JSON array
+        date: new Date().toISOString()
       }])
       .select()
       .single();
@@ -45,18 +73,22 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    
     if (!body.id) throw { status: 400, message: "Article ID is required for updates." };
 
+    const validatedData = articleSchema.parse({
+       ...body,
+       content: body.content || []
+    });
+    
     const supabase = await getSupabaseClient();
 
     const { data, error } = await supabase
       .from('newsletter')
       .update({
-        title: body.title,
-        summary: body.summary,
-        image_url: body.imageUrl
-        // Notice we DO NOT update 'date' or 'author' so the original credit remains intact!
+        title: validatedData.title,
+        summary: validatedData.summary,
+        image_url: validatedData.imageUrl,
+        content: validatedData.content // Update the JSON array
       })
       .eq('id', body.id)
       .select()

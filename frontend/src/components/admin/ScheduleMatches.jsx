@@ -26,10 +26,10 @@ export default function ScheduleMatches() {
       // 2. Fix the URL and add the Auth Headers!
       const res = await fetch('/api/admin/matches', { 
         method: 'POST',
-        credentials: 'include', // <--- Magic Key!
+        credentials: 'include', 
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}` // <--- VIP Pass!
+          'Authorization': `Bearer ${session?.access_token}` 
         },
         body: JSON.stringify({ ...form, division })
       });
@@ -65,33 +65,40 @@ export default function ScheduleMatches() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex items-center gap-4">
+            {/* HOME TEAM SELECT */}
             <div className="flex-1">
               <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Home Team</label>
-              <select required value={form.home_team_id} onChange={e => setForm({...form, home_team_id: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 appearance-none">
-                <option value="" disabled>Select Home Team...</option>
-                {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              <select required value={form.home_team_id} onChange={e => setForm({...form, home_team_id: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 appearance-none text-white">
+                <option value="" disabled className="bg-zinc-900 text-white">Select Home Team...</option>
+                {teams.map(t => <option key={t.id} value={t.id} className="bg-zinc-900 text-white">{t.name}</option>)}
               </select>
             </div>
+            
             <div className="pt-6">
               <Swords className="text-zinc-600 w-8 h-8" />
             </div>
+            
+            {/* AWAY TEAM SELECT */}
             <div className="flex-1">
               <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Away Team</label>
-              <select required value={form.away_team_id} onChange={e => setForm({...form, away_team_id: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 appearance-none">
-                <option value="" disabled>Select Away Team...</option>
-                {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              <select required value={form.away_team_id} onChange={e => setForm({...form, away_team_id: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 appearance-none text-white">
+                <option value="" disabled className="bg-zinc-900 text-white">Select Away Team...</option>
+                {teams.map(t => <option key={t.id} value={t.id} className="bg-zinc-900 text-white">{t.name}</option>)}
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
+            {/* DATE INPUT (Fixed with color-scheme:dark) */}
             <div>
               <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Kickoff Date & Time</label>
-              <input type="datetime-local" required value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white" />
+              <input type="datetime-local" required value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [color-scheme:dark]" />
             </div>
+            
+            {/* VENUE INPUT */}
             <div>
               <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Venue / Pitch</label>
-              <input type="text" placeholder="e.g. Main Turf" required value={form.venue} onChange={e => setForm({...form, venue: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30" />
+              <input type="text" placeholder="e.g. Main Turf" required value={form.venue} onChange={e => setForm({...form, venue: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white" />
             </div>
           </div>
 

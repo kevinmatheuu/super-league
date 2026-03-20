@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { Activity, Trophy, Timer, CheckCircle, X } from 'lucide-react';
-import { supabase } from '../../lib/supabase'; // IMPORTANT: Added to grab the token!
+import { supabase } from '../../lib/supabase';
 
 export default function LiveController() {
   const { data: resp, refetch } = useApi('/admin/matches?status=live,scheduled');
-  const { data: playersResp } = useApi('/players'); // Fetch all players for the dropdowns!
+  const { data: playersResp } = useApi('/players'); 
   
   const matches = resp?.data || [];
   const allPlayers = playersResp?.data || [];
@@ -13,29 +13,22 @@ export default function LiveController() {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [loading, setLoading] = useState(false);
   
-  // State for our new Goal Form
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [goalForm, setGoalForm] = useState({ 
-    team_id: '', 
-    player_id: '', 
-    assist_id: '', 
-    minute: '', 
-    is_own_goal: false 
+    team_id: '', player_id: '', assist_id: '', minute: '', is_own_goal: false 
   });
 
   const handleAction = async (action, extraData = {}) => {
     setLoading(true);
     try {
-      // 1. Grab the VIP Pass (Auth Token)
       const { data: { session } } = await supabase.auth.getSession();
 
-      // 2. Attach the token to the manual fetch call
       const res = await fetch('/api/admin/matches/live', {
         method: 'POST',
         credentials: 'include',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}` // The fix for the 401 Error!
+          'Authorization': `Bearer ${session?.access_token}` 
         },
         body: JSON.stringify({
           match_id: selectedMatch.id,
@@ -47,8 +40,8 @@ export default function LiveController() {
       const result = await res.json();
       if (result.success) {
         alert(result.message);
-        refetch(); // Refresh list to update scores
-        setShowGoalForm(false); // Close form on success
+        refetch(); 
+        setShowGoalForm(false); 
       } else {
         alert("Error: " + result.message);
       }
@@ -65,15 +58,24 @@ export default function LiveController() {
     handleAction('add_goal', goalForm);
   };
 
-  // Filter players based on which team is selected in the dropdown
+  // Bulletproof filter
   const teamPlayers = allPlayers.filter(p => {
     const playerTeamId = p.team_id || p.teams?.id;
     return playerTeamId === goalForm.team_id;
   });
 
+  // Handle Own Goal Toggle
+  const toggleOwnGoal = (e) => {
+    const isOwn = e.target.checked;
+    setGoalForm(prev => ({
+      ...prev,
+      is_own_goal: isOwn,
+      assist_id: isOwn ? '' : prev.assist_id // Instantly clear assist if own goal
+    }));
+  };
+
   return (
     <div className="p-6 space-y-8">
-      {/* MATCH SELECTOR */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {matches.map(m => (
           <button 
@@ -90,7 +92,6 @@ export default function LiveController() {
         ))}
       </div>
 
-      {/* MATCH CONTROL CENTER */}
       {selectedMatch && (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8 animate-in fade-in slide-in-from-bottom-4">
           <h3 className="text-center text-sm font-black uppercase tracking-widest text-zinc-500 mb-6">Control Center</h3>
@@ -107,7 +108,6 @@ export default function LiveController() {
             </div>
           </div>
 
-          {/* THE NEW GOAL FORM */}
           {showGoalForm ? (
             <form onSubmit={submitGoal} className="bg-black/50 border border-white/10 rounded-xl p-6 mb-6 space-y-4">
               <div className="flex justify-between items-center mb-4">
@@ -116,36 +116,47 @@ export default function LiveController() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* SELECT TEAM */}
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Select Team</label>
-                  <select required value={goalForm.team_id} onChange={e => setGoalForm({...goalForm, team_id: e.target.value, player_id: '', assist_id: ''})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none text-sm">
-                    <option value="" disabled>Select Team...</option>
-                    <option value={selectedMatch.home_team_id}>{selectedMatch.home_team_name} (Home)</option>
-                    <option value={selectedMatch.away_team_id}>{selectedMatch.away_team_name} (Away)</option>
+                  <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${goalForm.is_own_goal ? 'text-red-400' : 'text-zinc-500'}`}>
+                    {goalForm.is_own_goal ? "Select Offending Team (Own Goal)" : "Select Scoring Team"}
+                  </label>
+                  <select required value={goalForm.team_id} onChange={e => setGoalForm({...goalForm, team_id: e.target.value, player_id: '', assist_id: ''})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none text-sm text-white">
+                    <option value="" disabled className="bg-zinc-900 text-white">Select Team...</option>
+                    <option value={selectedMatch.home_team_id} className="bg-zinc-900 text-white">{selectedMatch.home_team_name} (Home)</option>
+                    <option value={selectedMatch.away_team_id} className="bg-zinc-900 text-white">{selectedMatch.away_team_name} (Away)</option>
                   </select>
                 </div>
+
+                {/* MINUTE */}
                 <div>
                   <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Minute</label>
-                  <input type="number" required placeholder="e.g. 45" value={goalForm.minute} onChange={e => setGoalForm({...goalForm, minute: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none text-sm" />
+                  <input type="number" required placeholder="e.g. 45" value={goalForm.minute} onChange={e => setGoalForm({...goalForm, minute: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none text-sm text-white" />
                 </div>
+
+                {/* GOALSCORER */}
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Goalscorer</label>
-                  <select required disabled={!goalForm.team_id} value={goalForm.player_id} onChange={e => setGoalForm({...goalForm, player_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none text-sm disabled:opacity-50">
-                    <option value="" disabled>Select Player...</option>
-                    {teamPlayers.map(p => <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>)}
+                  <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${goalForm.is_own_goal ? 'text-red-400' : 'text-zinc-500'}`}>
+                    {goalForm.is_own_goal ? "Player Who Scored Own Goal" : "Goalscorer"}
+                  </label>
+                  <select required disabled={!goalForm.team_id} value={goalForm.player_id} onChange={e => setGoalForm({...goalForm, player_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none text-sm text-white disabled:opacity-50">
+                    <option value="" disabled className="bg-zinc-900 text-white">Select Player...</option>
+                    {teamPlayers.map(p => <option key={p.id} value={p.id} className="bg-zinc-900 text-white">{p.first_name} {p.last_name}</option>)}
                   </select>
                 </div>
+
+                {/* ASSIST (DISABLED IF OWN GOAL) */}
                 <div>
                   <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Assist (Optional)</label>
-                  <select disabled={!goalForm.team_id} value={goalForm.assist_id} onChange={e => setGoalForm({...goalForm, assist_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none text-sm disabled:opacity-50">
-                    <option value="">No Assist (Solo)</option>
-                    {teamPlayers.filter(p => p.id !== goalForm.player_id).map(p => <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>)}
+                  <select disabled={!goalForm.team_id || goalForm.is_own_goal} value={goalForm.assist_id} onChange={e => setGoalForm({...goalForm, assist_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 outline-none text-sm text-white disabled:opacity-50">
+                    <option value="" className="bg-zinc-900 text-white">{goalForm.is_own_goal ? "No Assists on Own Goals" : "No Assist (Solo)"}</option>
+                    {teamPlayers.filter(p => p.id !== goalForm.player_id).map(p => <option key={p.id} value={p.id} className="bg-zinc-900 text-white">{p.first_name} {p.last_name}</option>)}
                   </select>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 py-2">
-                <input type="checkbox" id="own_goal" checked={goalForm.is_own_goal} onChange={e => setGoalForm({...goalForm, is_own_goal: e.target.checked})} className="w-4 h-4 accent-red-500" />
+                <input type="checkbox" id="own_goal" checked={goalForm.is_own_goal} onChange={toggleOwnGoal} className="w-4 h-4 accent-red-500" />
                 <label htmlFor="own_goal" className="text-xs font-bold uppercase tracking-widest text-red-400">Mark as Own Goal</label>
               </div>
 

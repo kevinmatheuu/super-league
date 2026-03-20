@@ -6,10 +6,8 @@ import { GlassPanel } from '../components/GlassPanel';
 import LiveController from '../components/admin/LiveController';
 import ManagePlayers from '../components/admin/ManagePlayers';
 import ScheduleMatches from '../components/admin/ScheduleMatches';
-
-// Placeholder components for your modules
-const ManageTeams = () => <div className="p-8"><h2 className="text-2xl font-black">Manage Teams</h2><p>Data table goes here...</p></div>;
-const ManageNews = () => <div className="p-8"><h2 className="text-2xl font-black">Manage News</h2><p>Data table goes here...</p></div>;
+import ManageTeams from '../components/admin/ManageTeams';
+import ManageNews from '../components/admin/ManageNews';
 
 export function AdminDashboard() {
   const { user, signOut } = useAuth();

@@ -1,5 +1,6 @@
+import React from 'react';
 import { useLeague } from '../context/LeagueContext';
-import { ArrowLeft, Calendar } from 'lucide-react';
+import { ArrowLeft, Calendar, Newspaper } from 'lucide-react';
 
 export function ArticleView() {
   const { selectedArticle, setView } = useLeague();
@@ -9,6 +10,14 @@ export function ArticleView() {
     setView('vault');
     return null;
   }
+
+  // 1. SAFELY EXTRACT FIELDS (Handles both OLD dummy data and NEW database data)
+  const title = selectedArticle.title || selectedArticle.headline || 'Untitled Article';
+  const summary = selectedArticle.summary || selectedArticle.snippet || '';
+  const imageUrl = selectedArticle.image_url || selectedArticle.imgUrl;
+  const date = selectedArticle.date || new Date().toISOString();
+  const author = selectedArticle.author || 'Super League Media';
+  const category = selectedArticle.category || 'Official Editorial';
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
@@ -22,14 +31,16 @@ export function ArticleView() {
         <span className="text-xs font-bold uppercase tracking-widest">Back to Newsletter</span>
       </button>
 
-      {/* Hero Header (Image Only) */}
-      <div className="relative w-full h-[30vh] sm:h-[50vh] rounded-3xl overflow-hidden mb-10 border border-white/10">
-        <img 
-          src={selectedArticle.imgUrl} 
-          alt={selectedArticle.headline}
-          className="w-full h-full object-cover"
-        />
-      </div>
+      {/* Hero Header */}
+      {imageUrl ? (
+        <div className="relative w-full h-[30vh] sm:h-[50vh] rounded-3xl overflow-hidden mb-10 border border-white/10 bg-black">
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+        </div>
+      ) : (
+        <div className="relative w-full h-48 rounded-3xl overflow-hidden mb-10 border border-white/10 bg-zinc-900 flex items-center justify-center">
+          <Newspaper size={48} className="text-zinc-700" />
+        </div>
+      )}
 
       {/* Article Content */}
       <div className="max-w-3xl mx-auto px-2 sm:px-6">
@@ -38,16 +49,16 @@ export function ArticleView() {
         <div className="mb-8 border-b border-white/10 pb-8 space-y-6">
           <div className="flex items-center gap-4">
             <span className="px-3 py-1 bg-white border border-white/20 text-black text-[10px] sm:text-xs font-black uppercase tracking-widest rounded-full">
-              {selectedArticle.category}
+              {category}
             </span>
             <div className="flex items-center gap-2 text-zinc-400 text-xs font-bold uppercase tracking-widest">
               <Calendar size={14} />
-              {selectedArticle.date}
+              {new Date(date).toLocaleDateString()}
             </div>
           </div>
           
           <h1 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-400 tracking-tighter leading-tight drop-shadow-sm">
-            {selectedArticle.headline}
+            {title}
           </h1>
 
           <div className="flex items-center gap-3 pt-2">
@@ -55,35 +66,51 @@ export function ArticleView() {
               SL
             </div>
             <div>
-              <p className="text-sm font-bold text-white tracking-wide">Super League Media</p>
+              <p className="text-sm font-bold text-white tracking-wide">{author}</p>
               <p className="text-xs text-zinc-500 font-mono">Official Editorial</p>
             </div>
           </div>
         </div>
 
-        <div className="prose prose-invert prose-lg max-w-none">
-          <p className="text-xl font-medium text-zinc-300 leading-relaxed mb-6">
-            {selectedArticle.snippet}
-          </p>
+        {/* THE DYNAMIC CONTENT VIEWER */}
+        <div className="prose prose-invert prose-lg max-w-none font-serif text-zinc-300">
           
-          {/* Simulated additional content for the mock UI */}
-          <p className="text-zinc-400 leading-relaxed mb-6">
-            The recent developments surrounding <strong>{selectedArticle.headline.split(' ').slice(0, 3).join(' ')}</strong> have sent shockwaves across the division. Coaches, players, and pundits alike are grappling with the implications of this event. Tactical systems are being questioned, and the fanbase is eager for answers.
-          </p>
+          {summary && <p className="text-xl font-medium text-[#E8C881] leading-relaxed mb-8">{summary}</p>}
 
-          <p className="text-zinc-400 leading-relaxed mb-6">
-            Sources close to the team organization suggest that behind closed doors, intense meetings are taking place. The pressure is mounting as the season progresses towards its critical stages. Every point, every tackle, and every decision now carries exponential weight.
-          </p>
-
-          <div className="my-10 p-6 sm:p-8 bg-zinc-900 border-l-4 border-white/30 rounded-r-xl">
-            <p className="text-xl sm:text-2xl font-bold italic text-white leading-snug">
-              "This is undoubtedly one of the pivotal moments of the season. What happens next will define the legacy of this squad for years to come."
-            </p>
-          </div>
-
-          <p className="text-zinc-400 leading-relaxed">
-            As the League awaits an official statement, analysts predict a significant shift in the upcoming fixture odds. Whether this incident becomes a rallying cry or a stumbling block remains the ultimate question. We will continue to follow this story as it develops.
-          </p>
+          {/* CHECK 1: Is it the new JSON Array from the Admin Panel? */}
+          {Array.isArray(selectedArticle.content) && selectedArticle.content.length > 0 ? (
+            selectedArticle.content.map((block, i) => {
+              if (block.type === 'paragraph') return <p key={i} className="mb-6 leading-relaxed">{block.value}</p>;
+              
+              if (block.type === 'image') return (
+                <figure key={i} className="my-10">
+                  <img src={block.url} alt={block.alt || 'News image'} className="w-full rounded-xl border border-white/10" />
+                  {block.alt && <figcaption className="text-center text-xs text-zinc-500 mt-2 uppercase tracking-widest">{block.alt}</figcaption>}
+                </figure>
+              );
+              
+              if (block.type === 'quote') return (
+                <blockquote key={i} className="my-10 p-6 sm:p-8 bg-zinc-900 border-l-4 border-[#E8C881] rounded-r-xl">
+                  <p className="text-xl sm:text-2xl font-bold italic text-white leading-snug">"{block.value}"</p>
+                  {block.author && <footer className="text-[#E8C881] mt-4 font-black uppercase text-xs tracking-widest">— {block.author}</footer>}
+                </blockquote>
+              );
+              
+              return null;
+            })
+          ) : 
+          
+          /* CHECK 2: Is it an old legacy string? */
+          typeof selectedArticle.content === 'string' && selectedArticle.content.trim() !== '' ? (
+            selectedArticle.content.split('\n').map((paragraph, i) => (
+              paragraph.trim() ? <p key={i} className="mb-6 leading-relaxed">{paragraph}</p> : null
+            ))
+          ) : (
+            
+          /* FALLBACK: If no content exists at all */
+            <p className="italic text-zinc-500">No additional content available.</p>
+          )}
+          
         </div>
       </div>
 

@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { handleError } from '../../../../lib/errorHandler'; // Adjust path if needed
+import { handleError } from '../../../../lib/errorHandler';
 
-async function getSupabaseClient() {
+// The Magic Fix for Middleware
+async function getSupabaseClient(request: Request) {
   const cookieStore = await cookies();
+  const authHeader = request.headers.get('Authorization');
+
   return createServerClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
     cookies: { getAll() { return cookieStore.getAll() }, setAll() {} },
+    global: { headers: { Authorization: authHeader || '' } },
   });
 }
 
@@ -14,18 +18,15 @@ async function getSupabaseClient() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const supabase = await getSupabaseClient();
-
-    // Security check
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) throw { status: 401, message: "Unauthorized" };
+    const supabase = await getSupabaseClient(request);
 
     const { data, error } = await supabase
       .from('teams')
       .insert([{
         name: body.name,
-        logo_url: body.logo_url || null,
-        division: body.division || 'mens' // Default to men's league if not specified
+        short_name: body.short_name,
+        division: body.division,
+        logo_url: body.logo_url || null
       }])
       .select()
       .single();
@@ -37,40 +38,15 @@ export async function POST(request: Request) {
   }
 }
 
-// UPDATE A TEAM
-export async function PUT(request: Request) {
-  try {
-    const body = await request.json();
-    if (!body.id) throw { status: 400, message: "Team ID is required." };
-
-    const supabase = await getSupabaseClient();
-
-    const { data, error } = await supabase
-      .from('teams')
-      .update({
-        name: body.name,
-        logo_url: body.logo_url,
-        division: body.division
-      })
-      .eq('id', body.id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return NextResponse.json({ success: true, message: "Team updated successfully", data });
-  } catch (error) {
-    return handleError(error, "Admin Update Team");
-  }
-}
-
 // DELETE A TEAM
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+
     if (!id) throw { status: 400, message: "Team ID is required." };
 
-    const supabase = await getSupabaseClient();
+    const supabase = await getSupabaseClient(request);
 
     const { error } = await supabase
       .from('teams')

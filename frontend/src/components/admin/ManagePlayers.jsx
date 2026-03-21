@@ -18,7 +18,7 @@ const initialFormState = {
 
 export default function ManagePlayers() {
   const { data: playersResp, refetch: refetchPlayers } = useApi('/players'); 
-  const { data: teamsResp } = useApi('/teams'); 
+  const { data: teamsResp } = useApi('/teams?all=true'); 
   
   const players = playersResp?.data || [];
   const teams = teamsResp?.data || [];

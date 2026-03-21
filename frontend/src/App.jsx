@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Layout } from './Layout';
 import { Loader } from './components/Loader';
 import { Onboarding } from './pages/Onboarding';
-
 // 1. IMPORT YOUR NEW ADMIN PAGES!
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminDashboard } from './pages/AdminDashboard';
@@ -30,17 +29,15 @@ function AuthGuard() {
     );
   }
 
-  // Force onboarding if logged in but profile is incomplete (no nickname set yet)
-  if (user && (!profile || !profile.nickname || !profile.team_flair_id)) {
+  // Force onboarding if logged in but profile is incomplete
+  // FIX: Using optional chaining (?.) so it doesn't crash if profile is null!
+  if (user && (!profile?.nickname || !profile?.team_flair_id)) {
     return <Onboarding />;
   }
 
-  // Allow app access to everyone (Login happens voluntarily or on restricted pages)
-  return (
-    <LeagueProvider>
-      <Layout />
-    </LeagueProvider>
-  );
+  // Allow app access to everyone
+  // FIX: LeagueProvider removed from here because it's now wrapping the whole app!
+  return <Layout />;
 }
 
 function App() {
@@ -58,7 +55,6 @@ function App() {
   if (path === '/admin') {
     return (
       <AuthProvider>
-        {/* We wrap this in LeagueProvider so your useApi hook can still read the division! */}
         <LeagueProvider> 
           <AdminDashboard />
         </LeagueProvider>
@@ -67,9 +63,12 @@ function App() {
   }
 
   // 3. THE NORMAL STUDENT APP
+  // FIX: LeagueProvider now wraps AuthGuard, giving Onboarding full access!
   return (
     <AuthProvider>
-      <AuthGuard />
+      <LeagueProvider>
+        <AuthGuard />
+      </LeagueProvider>
     </AuthProvider>
   );
 }

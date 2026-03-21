@@ -41,8 +41,8 @@ export async function GET(
       image_url: data.image_url,
       assists: data.assists ?? 0,
       goals: goalCount ?? 0,
-      overall_rating: data.overall_rating ?? 50, // Added!
-      attributes: data.attributes || null,       // Added!
+      overall_rating: data.overall_rating ?? 50,
+      attributes: data.attributes || null,
       team: (data as any).teams?.name || null,
       team_id: (data as any).teams?.id || null,
     };

@@ -12,13 +12,20 @@ const supabase = createClient(
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const division = searchParams.get('division') || 'mens';
 
-    const { data, error } = await supabase
+    const division = searchParams.get('division');
+    const all = searchParams.get('all');
+
+    let query = supabase
       .from('teams')
       .select('id, name, logo_url')
-      .eq('division', division) // MAGIC LINE
       .order('name', { ascending: true });
+
+    if (!all) {
+      query = query.eq('division', division || 'mens');
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
 

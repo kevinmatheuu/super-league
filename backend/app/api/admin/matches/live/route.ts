@@ -69,37 +69,44 @@ export async function POST(request: Request) {
       case 'add_goal':
         if (!player_id || !team_id) throw { status: 400, message: "player_id and team_id required for a goal." };
         
-        // Is the player who scored on the home team?
         const isHomePlayer = match.home_team_id === team_id;
         
-        // If it's an OWN GOAL, give the point to the OTHER team!
         if (body.is_own_goal) {
+          // 1. Give point to the OPPOSITE team
           updatePayload.home_score = !isHomePlayer ? (match.home_score || 0) + 1 : match.home_score;
           updatePayload.away_score = isHomePlayer ? (match.away_score || 0) + 1 : match.away_score;
+          
+          // 2. Add to an 'own_goals' array INSTEAD of 'scorers' so they don't get Golden Boot points!
+          const currentOwnGoals = match.own_goals || [];
+          updatePayload.own_goals = [...currentOwnGoals, player_id];
+          
+          responseMessage = "Own Goal registered! Point awarded to the opposition.";
         } else {
-          // Normal goal: give the point to the player's team
+          // Normal Goal: Give point to the PLAYER'S team
           updatePayload.home_score = isHomePlayer ? (match.home_score || 0) + 1 : match.home_score;
           updatePayload.away_score = !isHomePlayer ? (match.away_score || 0) + 1 : match.away_score;
-        }
-        
-        // Append to scorers JSON array so your Prediction engine can grade it
-        const currentScorers = match.scorers || [];
-        updatePayload.scorers = [...currentScorers, player_id];
+          
+          // Add to regular scorers array
+          const currentScorers = match.scorers || [];
+          updatePayload.scorers = [...currentScorers, player_id];
 
-        // If there is an assist, log it!
-        if (body.assist_id) {
-          const currentAssists = match.assists || [];
-          updatePayload.assists = [...currentAssists, body.assist_id];
+          // MAGIC FIX: Log the assist AND update the player's permanent stats!
+          if (body.assist_id) {
+            const currentAssists = match.assists || [];
+            updatePayload.assists = [...currentAssists, body.assist_id];
+
+            // Grab the assisting player's current tally and add 1
+            const { data: assistPlayer } = await supabase.from('players').select('assists').eq('id', body.assist_id).single();
+            await supabase.from('players').update({ assists: (assistPlayer?.assists || 0) + 1 }).eq('id', body.assist_id);
+          }
+          responseMessage = "Goal registered successfully!";
         }
-        
         updatePayload.status = 'live';
         
-        // Insert into the goals table (You can add 'is_own_goal' and 'minute' to this table later if you want!)
+        // (Optional) If you have an is_own_goal column in your goals table, you can pass it here later!
         await supabase.from('goals').insert([{ match_id, player_id, team_id }]);
-        
-        responseMessage = body.is_own_goal ? "Own Goal registered!" : "Goal registered successfully!";
         break;
-
+        
       case 'add_assist':
         if (!player_id) throw { status: 400, message: "player_id required for an assist." };
         const currentAssists = match.assists || [];

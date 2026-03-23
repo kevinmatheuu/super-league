@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       // Update prediction row
       return supabase
         .from('predictions')
-        .update({ points_awarded: totalPoints })
+        .update({ points_awarded: totalPoints ,status: 'graded'})
         .eq('id', prediction.id);
     });
 

@@ -44,8 +44,8 @@ export async function GET() {
         predicted_scorers, 
         predicted_assists,
         matches!inner(status, scorers, assists),
-        user_profiles(nickname, real_name, email)
-      `)
+        user_profiles!fk_predictions_user_profiles(nickname, real_name, email)
+      `) 
       .eq('matches.status', 'completed');
 
     if (predError) throw predError;
@@ -60,9 +60,10 @@ export async function GET() {
       if (!statsMap[userId]) {
         
         // Smart Name Selector: Prefers their custom nickname, falls back to Google real name, then email
-        const profile = p.user_profiles || {};
-        const displayName = profile.nickname || profile.real_name || profile.email?.split('@')[0] || `Fan_${userId.substring(0, 5)}`;
-
+        // Smart Name Selector: Safely handle if profile is an array or object
+        const profile = Array.isArray(p.user_profiles) ? p.user_profiles[0] : (p.user_profiles || {});
+        const displayName = profile?.nickname || profile?.real_name || profile?.email?.split('@')[0] || `Fan_${userId.substring(0, 5)}`;
+        
         statsMap[userId] = {
           user_id: userId,
           username: displayName,

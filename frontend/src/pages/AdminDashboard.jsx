@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { Users, Shield, Calendar, Newspaper, Activity, LogOut, Menu, X } from 'lucide-react';
+import { Users, Shield, Calendar, Newspaper, Activity, LogOut, Menu, X ,Calculator} from 'lucide-react';
 import { GlassPanel } from '../components/GlassPanel';
 import LiveController from '../components/admin/LiveController';
 import ManagePlayers from '../components/admin/ManagePlayers';
 import ScheduleMatches from '../components/admin/ScheduleMatches';
 import ManageTeams from '../components/admin/ManageTeams';
 import ManageNews from '../components/admin/ManageNews';
+import GradePredictions from '../components/admin/GradePredictions';
 
 export function AdminDashboard() {
   const { user, signOut } = useAuth();
@@ -55,6 +56,7 @@ export function AdminDashboard() {
     { id: 'schedule', label: 'Schedule', icon: Calendar },
     { id: 'teams', label: 'Teams', icon: Shield },
     { id: 'players', label: 'Players', icon: Users },
+    { id: 'grading', label: 'Grade Fantasy', icon: Calculator, color: 'text-[#E8C881]' },
     { id: 'news', label: 'Newsletter', icon: Newspaper },
   ];
 
@@ -144,6 +146,7 @@ export function AdminDashboard() {
           {activeTab === 'schedule' && <ScheduleMatches />}
           {activeTab === 'teams' && <ManageTeams />}
           {activeTab === 'players' && <ManagePlayers />}
+          {activeTab === 'grading' && <GradePredictions />}
           {activeTab === 'news' && <ManageNews />}
         </GlassPanel>
       </div>

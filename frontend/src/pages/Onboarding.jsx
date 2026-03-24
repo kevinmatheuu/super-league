@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { GlassPanel } from '../components/GlassPanel';
-import { useApi } from '../hooks/useApi';
 import { Send, User } from 'lucide-react';
 
 export function Onboarding() {
@@ -11,9 +10,15 @@ export function Onboarding() {
   const [flair, setFlair] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [allTeams, setAllTeams] = useState([]);
 
-  const { data: standingsResp } = useApi('/standings');
-  const allTeams = standingsResp?.data?.standings || standingsResp?.data || [];
+  useEffect(() => {
+    const fetchAllTeams = async () => {
+      const { data } = await supabase.from('teams').select('*').order('name');
+      if (data) setAllTeams(data);
+    };
+    fetchAllTeams();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,8 +99,8 @@ export function Onboarding() {
             >
               <option value="" disabled>Select a Club...</option>
               {allTeams.map((t) => (
-                <option key={t.teamId} value={t.teamName} className="bg-zinc-900">
-                  {t.teamName}
+                <option key={t.id} value={t.name} className="bg-zinc-900">
+                  {t.name} ({t.division === 'womens' ? "Women's" : "Men's"})
                 </option>
               ))}
                 </select>

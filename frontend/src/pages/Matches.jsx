@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLeague } from '../context/LeagueContext';
 import { Calendar, Loader2, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { Loader } from '../components/Loader';
 
 // GLOBAL MATCH CARD COMPONENT
 function MatchCard({ match, onClick }) {
@@ -80,12 +81,7 @@ export function Matches() {
     setView('matchTimeline'); 
   };
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-500 animate-pulse space-y-4">
-        <Loader2 className="w-12 h-12 animate-spin text-white/20" />
-        <span className="font-black tracking-[0.3em] uppercase text-sm">Loading Matches...</span>
-      </div>
-    );
+    return <Loader text="Loading Matches..." />;
   }
 
   // Group Matches by Status

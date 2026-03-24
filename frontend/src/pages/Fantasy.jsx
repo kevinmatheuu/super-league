@@ -7,6 +7,7 @@ import { Send, CheckCircle2, RefreshCw, Loader2, Crown, Lock } from 'lucide-reac
 import { cn } from '../utils/cn';
 import { Login } from './Login';
 import { supabase } from '../lib/supabase';
+import { Loader } from '../components/Loader';
 
 export function Fantasy() {
   const { division } = useLeague();
@@ -207,12 +208,7 @@ export function Fantasy() {
   const leaderboard = lbResp?.data?.overall || [];
 
   if (scheduleLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-500 animate-pulse space-y-4">
-        <Loader2 className="w-12 h-12 animate-spin text-white/20" />
-        <span className="font-black tracking-[0.3em] uppercase text-sm">Loading Predictor Engine...</span>
-      </div>
-    );
+    return <Loader text="Loading Predictor Engine..." />;
   }
 
   if (!user) {

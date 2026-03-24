@@ -4,6 +4,7 @@ import { GlassPanel } from '../components/GlassPanel';
 import { FormGuide } from '../components/FormGuide';
 import { NewsArticle } from '../components/NewsArticle';
 import { ChevronRight, Trophy, Goal, Zap, Loader2, Calendar } from 'lucide-react';
+import { Loader } from '../components/Loader';
 import './DashboardGrid.css';
 
 function SectionHeader({ title, action, onAction }) {
@@ -30,12 +31,7 @@ export function Home() {
     const { data: apiResponse, loading, error } = useApi('/home/dashboard');
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-zinc-500 animate-pulse space-y-4">
-                <Loader2 className="w-12 h-12 animate-spin text-white/20" />
-                <span className="font-black tracking-[0.3em] uppercase text-sm">Aggregating Live Data...</span>
-            </div>
-        );
+        return <Loader variant="spinner" fullScreen text="Aggregating Live Data..." />;
     }
 
     if (error) {
@@ -58,7 +54,10 @@ export function Home() {
         <div className="space-y-12 animate-in fade-in duration-500 pb-12 overflow-x-hidden">
 
             {match ? (
-                <GlassPanel className="p-8 sm:p-12 md:p-20 relative overflow-hidden border border-white/20 animate-fade-up opacity-0 stagger-1">
+                <GlassPanel 
+                    className="p-8 sm:p-12 md:p-20 relative overflow-hidden border border-white/20 animate-fade-up opacity-0 stagger-1 cursor-pointer hover:bg-white/5 transition-colors group"
+                    onClick={() => setView('matches')}
+                >
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-white/5 blur-[120px] rounded-full pointer-events-none mix-blend-screen" />
 
                     <div className="relative z-10 flex flex-col items-center">
@@ -132,8 +131,11 @@ export function Home() {
                     </div>
                 </GlassPanel>
             ) : (
-                <GlassPanel className="p-12 relative overflow-hidden border border-white/10 animate-fade-up flex justify-center items-center">
-                    <span className="text-sm font-black tracking-[0.3em] uppercase text-zinc-500">No Fixtures Currently Scheduled</span>
+                <GlassPanel 
+                    className="p-12 relative overflow-hidden border border-white/10 animate-fade-up flex justify-center items-center cursor-pointer hover:bg-white/5 transition-colors group"
+                    onClick={() => setView('matches')}
+                >
+                    <span className="text-sm font-black tracking-[0.3em] uppercase text-zinc-500 group-hover:text-zinc-400 transition-colors">No Fixtures Currently Scheduled</span>
                 </GlassPanel>
             )}
 

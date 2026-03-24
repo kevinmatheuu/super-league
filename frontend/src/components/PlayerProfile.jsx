@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLeague } from '../context/LeagueContext';
 import { ArrowLeft, Loader2, Shield, Hexagon } from 'lucide-react';
+import { Loader } from './Loader';
 import styles from './PlayerProfile.module.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -94,14 +95,7 @@ useEffect(() => {
   };
 
     if (loading) {
-        return (
-            <div className="grid place-content-center justify-items-center min-h-[50vh] text-zinc-500 animate-pulse gap-4">
-                <Loader2 className="w-12 h-12 animate-spin text-white/20" />
-                <span className="font-black tracking-[0.3em] uppercase text-sm">
-                    Loading Player...
-                </span>
-            </div>
-        );
+        return <Loader text="Loading Player..." />;
     }
 
     if (error || !player) {

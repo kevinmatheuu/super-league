@@ -2,18 +2,14 @@ import { useLeague } from '../context/LeagueContext';
 import { useApi } from '../hooks/useApi';
 import { NewsArticle } from '../components/NewsArticle';
 import { Loader2 } from 'lucide-react';
+import { Loader } from '../components/Loader';
 
 export function Vault() {
   const { division } = useLeague();
   const { data: apiResponse, loading, error } = useApi('/news');
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-500 animate-pulse space-y-4">
-        <Loader2 className="w-12 h-12 animate-spin text-white/20" />
-        <span className="font-black tracking-[0.3em] uppercase text-sm">Fetching Latest Stories...</span>
-      </div>
-    );
+    return <Loader text="Fetching Latest Stories..." />;
   }
 
   if (error) {

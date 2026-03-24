@@ -34,10 +34,7 @@ function AuthGuard() {
   if (loading || initialLoading) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center">
-        <Loader className="w-24 h-24 mb-4 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]" />
-        <h2 className="text-xl sm:text-2xl font-black tracking-[0.2em] text-white/90 uppercase animate-pulse">
-          Loading...
-        </h2>
+        <Loader variant="football" text="Loading..." />
       </div>
     );
   }

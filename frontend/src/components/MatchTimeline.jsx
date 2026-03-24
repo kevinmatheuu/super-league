@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLeague } from '../context/LeagueContext';
 import { ArrowLeft, Loader2, Clock, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { Loader } from './Loader';
 
 export default function MatchTimeline() {
   const { setView } = useLeague();
@@ -83,12 +84,7 @@ export default function MatchTimeline() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-zinc-500 animate-pulse space-y-4">
-        <Loader2 className="w-12 h-12 animate-spin text-white/20" />
-        <span className="font-black tracking-[0.3em] uppercase text-sm">Loading Match Data...</span>
-      </div>
-    );
+    return <Loader text="Loading Match Data..." fullScreen />;
   }
 
   if (!matchData) return null;

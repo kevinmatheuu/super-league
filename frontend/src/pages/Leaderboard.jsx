@@ -3,6 +3,7 @@ import { useApi } from '../hooks/useApi';
 import { GlassPanel } from '../components/GlassPanel';
 import { cn } from '../utils/cn';
 import { Loader2 } from 'lucide-react';
+import { Loader } from '../components/Loader';
 
 export function Leaderboard() {
   const { division } = useLeague();
@@ -19,12 +20,7 @@ export function Leaderboard() {
   const topAssists = assistsData.map(p => ({ ...p, stat: p.assists || 0 }));
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-zinc-500 animate-pulse space-y-4">
-        <Loader2 className="w-12 h-12 animate-spin text-white/20" />
-        <span className="font-black tracking-[0.3em] uppercase text-sm">Aggregating Player Stats...</span>
-      </div>
-    );
+    return <Loader text="Aggregating Player Stats..." fullScreen />;
   }
 
   return (

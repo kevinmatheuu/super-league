@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLeague } from '../context/LeagueContext';
 import { ArrowLeft, Calendar, Newspaper, Share2, Check, Loader2 } from 'lucide-react';
+import { Loader } from '../components/Loader';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -54,12 +55,7 @@ export function ArticleView() {
 
   // 4. SHOW LOADER WHILE FETCHING
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-32 text-zinc-500 animate-pulse">
-        <Loader2 className="w-10 h-10 animate-spin mb-4" />
-        <span className="text-xs font-black tracking-widest uppercase">Loading Article...</span>
-      </div>
-    );
+    return <Loader text="Loading Article..." />;
   }
 
   // 5. FIXED FAILSAFE: Only kick them out if we finished loading and STILL have no title

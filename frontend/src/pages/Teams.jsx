@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useLeague } from '../context/LeagueContext';
 import { useApi } from '../hooks/useApi';
 import { ArrowLeft, Shield, Loader2, Users, Calendar } from 'lucide-react';
+import { Loader } from '../components/Loader';
 import styles from './Teams.module.css';
 
 const POSITION_ORDER = ['GK', 'DEF', 'MID', 'FWD'];
@@ -246,12 +247,7 @@ export function Teams() {
     };
 
     if (teamsLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-500 animate-pulse space-y-4">
-                <Loader2 className="w-12 h-12 animate-spin text-white/20" />
-                <span className="font-black tracking-[0.3em] uppercase text-sm">Loading Teams...</span>
-            </div>
-        );
+        return <Loader text="Loading Teams..." />;
     }
 
     if (teamsError || teams.length === 0) {

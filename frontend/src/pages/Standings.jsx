@@ -2,6 +2,7 @@ import { useLeague } from '../context/LeagueContext';
 import { useApi } from '../hooks/useApi';
 import { GlassPanel } from '../components/GlassPanel';
 import { FormGuide } from '../components/FormGuide';
+import { Loader } from '../components/Loader';
 
 function MatchCard({ title, team1, team2, note1, note2 }) {
   return (
@@ -103,13 +104,7 @@ export function Standings() {
   }
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64 animate-pulse">
-        <span className="text-zinc-500 font-black tracking-widest uppercase text-sm">
-          Loading Live Standings...
-        </span>
-      </div>
-    );
+    return <Loader text="Loading Live Standings..." />;
   }
 
   if (error) {
@@ -133,9 +128,9 @@ export function Standings() {
         </div>
       </div>
 
-      <GlassPanel className="overflow-x-auto">
-        <div className="min-w-[800px] w-full">
-          <div className="grid grid-cols-[4rem_1.5fr_3rem_3rem_3rem_3rem_3rem_3rem_3rem_4rem_10rem] gap-2 p-4 border-b border-white/10 text-xs font-bold tracking-wider text-zinc-500 bg-black/60 uppercase">
+      <GlassPanel className="overflow-x-auto relative">
+        <div className="min-w-[900px] w-full">
+          <div className="grid grid-cols-[3rem_2.5fr_3rem_3rem_3rem_3rem_3rem_3rem_3rem_4rem_10rem] gap-2 p-4 border-b border-white/10 text-[11px] sm:text-xs font-bold tracking-wider text-zinc-500 bg-black/60 uppercase">
             <div className="text-center">Rank</div>
             <div>Club</div>
             <div className="text-center">MP</div>
@@ -156,17 +151,17 @@ export function Standings() {
                 <div 
                   key={team.teamId}
                   className={`
-                    grid grid-cols-[4rem_1.5fr_3rem_3rem_3rem_3rem_3rem_3rem_3rem_4rem_10rem] gap-2 p-4 items-center 
+                    grid grid-cols-[3rem_2.5fr_3rem_3rem_3rem_3rem_3rem_3rem_3rem_4rem_10rem] gap-2 p-4 items-center 
                     ${idx !== standings.length - 1 ? 'border-b border-white/5' : ''} 
                     hover:bg-white/5 transition-colors
                     ${promotes ? 'bg-white/[0.02]' : ''}
                   `}
                 >
-                  <div className="font-mono text-xl font-bold text-center text-zinc-400">{team.rank}</div>
+                  <div className="font-mono text-[16px] sm:text-xl font-bold text-center text-zinc-400">{team.rank}</div>
                   
-                  <div className="font-bold text-lg flex items-center gap-3">
-                    {team.logoUrl && <img src={team.logoUrl} className="w-6 h-6 object-contain" alt={team.teamName} />}
-                    {team.teamName}
+                  <div className="font-bold text-[15px] sm:text-lg flex items-center gap-2 sm:gap-3 min-w-0 pr-4">
+                    {team.logoUrl && <img src={team.logoUrl} className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" alt={team.teamName} />}
+                    <span className="truncate" title={team.teamName}>{team.teamName}</span>
                   </div>
                   
                   <div className="text-center text-zinc-400">{team.stats?.matchesPlayed || 0}</div>

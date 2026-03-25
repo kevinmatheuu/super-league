@@ -4,6 +4,7 @@ import { GlassPanel } from '../components/GlassPanel';
 import { FormGuide } from '../components/FormGuide';
 import { NewsArticle } from '../components/NewsArticle';
 import { ChevronRight, Trophy, Goal, Zap, Loader2, Calendar } from 'lucide-react';
+import { Loader } from '../components/Loader';
 import './DashboardGrid.css';
 
 function SectionHeader({ title, action, onAction }) {
@@ -30,12 +31,7 @@ export function Home() {
     const { data: apiResponse, loading, error } = useApi('/home/dashboard');
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-zinc-500 animate-pulse space-y-4">
-                <Loader2 className="w-12 h-12 animate-spin text-white/20" />
-                <span className="font-black tracking-[0.3em] uppercase text-sm">Aggregating Live Data...</span>
-            </div>
-        );
+        return <Loader variant="spinner" fullScreen text="Aggregating Live Data..." />;
     }
 
     if (error) {
@@ -58,7 +54,10 @@ export function Home() {
         <div className="space-y-12 animate-in fade-in duration-500 pb-12 overflow-x-hidden">
 
             {match ? (
-                <GlassPanel className="p-8 sm:p-12 md:p-20 relative overflow-hidden border border-white/20 animate-fade-up opacity-0 stagger-1">
+                <GlassPanel 
+                    className="p-8 sm:p-12 md:p-20 relative overflow-hidden border border-white/20 animate-fade-up opacity-0 stagger-1 cursor-pointer hover:bg-white/5 transition-colors group"
+                    onClick={() => setView('matches')}
+                >
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-white/5 blur-[120px] rounded-full pointer-events-none mix-blend-screen" />
 
                     <div className="relative z-10 flex flex-col items-center">
@@ -132,8 +131,11 @@ export function Home() {
                     </div>
                 </GlassPanel>
             ) : (
-                <GlassPanel className="p-12 relative overflow-hidden border border-white/10 animate-fade-up flex justify-center items-center">
-                    <span className="text-sm font-black tracking-[0.3em] uppercase text-zinc-500">No Fixtures Currently Scheduled</span>
+                <GlassPanel 
+                    className="p-12 relative overflow-hidden border border-white/10 animate-fade-up flex justify-center items-center cursor-pointer hover:bg-white/5 transition-colors group"
+                    onClick={() => setView('matches')}
+                >
+                    <span className="text-sm font-black tracking-[0.3em] uppercase text-zinc-500 group-hover:text-zinc-400 transition-colors">No Fixtures Currently Scheduled</span>
                 </GlassPanel>
             )}
 
@@ -175,7 +177,10 @@ export function Home() {
                                         {top4.map((team, idx) => (
                                             <div key={team.teamId} className={`grid grid-cols-[3rem_minmax(120px,1fr)_3rem_3rem] gap-2 p-4 sm:p-5 items-center ${idx !== top4.length - 1 ? 'border-b border-white/5' : ''} hover:bg-white/10 transition-colors cursor-pointer`} onClick={() => setView('standings')}>
                                                 <div className="font-mono text-base sm:text-lg font-black text-center text-zinc-400">{team.rank}</div>
-                                                <div className="font-black text-sm sm:text-lg truncate tracking-tight text-white uppercase">{team.teamName}</div>
+                                                <div className="font-black text-sm sm:text-lg tracking-tight text-white uppercase flex items-center gap-2 min-w-0 pr-2">
+                                                    {team.logoUrl && <img src={team.logoUrl} className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" alt={team.teamName} />}
+                                                    <span className="truncate" title={team.teamName}>{team.teamName}</span>
+                                                </div>
                                                 <div className="text-right text-zinc-500 font-mono font-bold text-sm sm:text-base">
                                                     {team.stats?.goalDifference > 0 ? `+${team.stats?.goalDifference}` : team.stats?.goalDifference}
                                                 </div>

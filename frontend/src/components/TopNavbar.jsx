@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Menu, X, User } from 'lucide-react';
+import { Menu, X, User, ArrowLeft } from 'lucide-react';
 import { useLeague } from '../context/LeagueContext';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../utils/cn';
 
 export function TopNavbar() {
-  const { division, setDivision, view, setView } = useLeague();
+  const { division, setDivision, view, setView, goBack } = useLeague();
   const { user, signInWithGoogle, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -29,11 +29,20 @@ export function TopNavbar() {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 h-[72px] bg-black/40 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-4 sm:px-6">
-        {/* Left: Logo */}
-        <div 
-          className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={() => setView('home')}
-        >
+        {/* Left: Logo & Back Button */}
+        <div className="flex items-center gap-1 sm:gap-4">
+          {view !== 'home' && (
+            <button 
+              onClick={goBack}
+              className="p-1 sm:p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
+            >
+              <ArrowLeft size={20} className="sm:w-6 sm:h-6" />
+            </button>
+          )}
+          <div 
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setView('home')}
+          >
           {division === 'womens' ? (
             <>
               <img src="/slk-womens.png" alt="WSL" className="w-14 h-14 sm:w-20 sm:h-20 object-contain relative -ml-2" />
@@ -42,10 +51,12 @@ export function TopNavbar() {
               </span>
             </>
           ) : (
-            <span className="text-xl sm:text-2xl font-black italic tracking-tighter text-white">
-              SUPER LEAGUE
+            <span className="text-lg sm:text-xl font-black italic tracking-tighter text-white leading-none flex flex-col justify-center">
+              <span>SUPER</span>
+              <span>LEAGUE</span>
             </span>
           )}
+          </div>
         </div>
 
         {/* Center: Division Toggle */}

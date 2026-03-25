@@ -525,9 +525,16 @@ export function Fantasy() {
                     )}>
                       {index + 1}
                     </div>
-                    <span className="font-bold text-white text-lg">
-                      {isMe ? myName : entry.username}
-                      {isMe && <span className="ml-2 text-[10px] bg-white text-black px-2 py-0.5 rounded-full uppercase tracking-widest font-black">You</span>}
+                    <span className="font-bold text-white text-lg flex flex-col items-start leading-tight">
+                      <div className="flex items-center">
+                        {isMe ? myName : entry.username}
+                        {isMe && <span className="ml-2 text-[10px] bg-white text-black px-2 py-0.5 rounded-full uppercase tracking-widest font-black">You</span>}
+                      </div>
+                      {entry.team_flair && (
+                        <span className={cn("px-2 py-[2px] mt-1 rounded-full text-[10px] text-white font-bold leading-none tracking-wide shadow-sm border border-white/10", getTeamColorClass(entry.team_flair))}>
+                          {entry.team_flair}
+                        </span>
+                      )}
                     </span>
                   </div>
                   <div className="text-right">
